@@ -30,13 +30,21 @@
 |----	|----	|----	|----	|----	|----	|----	|----	|----
 
 > 1、字段名：对应数据表字段名
+
 > 2、类型：字段的数据类型，例如**VARCHAR(255)**，**INT(10)**
+
 > 3、属性：当数据类型是整形时，此处可填入**UNSIGNED**表示无符号，否则空
+
 > 4、默认值：**无**表示没有默认值，当类型是字符串时，可填入**空字符串**表示默认空字符串，（默认值暂不支持**NOW()**等数据库内置函数），其它值会默认反应到生成的SQL语句中
+
 > 5、整理类型：默认**utf8_general_ci**
+
 > 6、空：表示当前字段是否为空，**否**表示不为空，对应sql中**NOT NULL**语法
+
 > 7、额外：只有当用于**AUTO_INCREMENT**自增时填入**AUTO_INCREMENT**
+
 > 8、索引：填入**primary_key**表示当前列为主键，如果有多个表示liane主键；填入**index**表示当前列为默认索引键，目前没有支持联合索引
+
 > 9、备注：当前字段的备注信息，对应SQL的COMMENT语法
 
 4、重复上述格式代表多个数据表
@@ -45,17 +53,17 @@
 ## 使用方法
 
 1、定义csv文件路径
-``` code
+``` javascript
 $csvFile = 'C:/Users/lixiang4u/Desktop/wp_comments.csv';
 ```
 
 2、实例对象
-``` code
+``` javascript
 $excel2Sql = new Excel2Sql($csvFile);
 ```
 
 3、执行生成操作
-``` code
+``` javascript
 $excel2Sql->generateSqlFile();
 ```
 
@@ -64,7 +72,7 @@ $excel2Sql->generateSqlFile();
 
 2、生成结果如下：
 
-``` code
+``` sql
 /**
  * Created by Excel2Sql
  * Author: lixiang4u
