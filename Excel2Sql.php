@@ -47,36 +47,54 @@ class Excel2Sql {
     public function __construct($csvFile = __FILE__) {
         $this->csvFile = $csvFile;
         $pathInfo      = pathinfo($this->csvFile);
-        $this->sqlFile = $pathInfo['dirname'] . DIRECTORY_SEPARATOR . $pathInfo['filename'] . '_' . date('YmdHis') . '.sql';
+        $this->sqlFile = $pathInfo['dirname'] . DIRECTORY_SEPARATOR . $pathInfo['filename'] . '_' . date('Ymd') . '.sql';
         if (!is_file($this->csvFile)) {
             throw  new Exception('文件不存在');
         }
-
-        $this->writeFile($this->sqlFile, '', 'w+');
     }
 
     /**
-     * 生成Sql文件，入口函数
+     * 将解析出的SQL结构体转化为SQL语句写入文件
+     * @return string 表名->SQL 字典
      */
-    public function generateSqlFile() {
+    public function writeSqlFile() {
+        $this->generateTableStruct();
+        $result = $this->tableStruct2Sql();
+        $this->writeFile($this->sqlFile, $this->getFileWriteTitle());
+        $this->writeFile($this->sqlFile, $result);
+        $this->writeFile($this->sqlFile, $this->getFileWriteTail());
+        return $result;
+    }
+
+    /**
+     * 只生成文件中描述的表结构（数据存放在内存）,并返回解析的结构体数据
+     * @return array 解析出的表结构体数据
+     */
+    public function generateTableStruct() {
         //1、按行读取数据存入结构体
         //2、将 上述结构体放入list
         //3、遇到行解析出表名的则计算上一个$firstTable结构，并解析出SQL语句
         //
-
         $fp = fopen($this->csvFile, 'r');
         while ($row = fgets($fp)) {
             $this->parseLine($row);
         }
         fclose($fp);
+        return $this->parsedTableStruct;
+    }
 
-        $result = $this->tableStruct2Sql();
-        $this->writeFile($this->sqlFile, $this->getFileWriteTitle());
-        $this->writeFile($this->sqlFile, $result);
-        $this->writeFile($this->sqlFile, $this->getFileWriteTail());
-
-        $this->p($this->parsedTableStruct);
-
+    /**
+     * 获取生成的表结构体数据，默认全部表，参数table表示只当表结构，table指定的数据不存在返回null
+     * @param bool $table 获解析出多个表指定表名的结构数据
+     * @return array|mixed 解析出的表结构体数据
+     */
+    public function getTableStruct($table = false) {
+        $this->generateTableStruct();
+        $result = $this->parsedTableStruct;
+        if (!empty($table)) {
+            $result = $result[$table];
+        }
+        return $result;
     }
 
     /**
@@ -142,7 +160,7 @@ class Excel2Sql {
             'charset' => '',//整理类型
             'isNull' => '',//空
             'extra' => '',//额外
-            'index' => '',//索引
+            'index' => '',//索引，存放
             'comment' => '',//备注
         );
     }
@@ -182,16 +200,19 @@ class Excel2Sql {
         //4、拼接索引
         //5、拼接整体SQL
 
-        $tableSqlStr = $fieldSqlStr = $primaryKeyStr = $indexStr = $tmpStr = '';
-        $primaryKey  = $index = array();
+        $tableSqlStr = $fieldSqlStr = $primaryKeyStr = $indexStr = $uniqueStr = $tmpStr = '';
+        $primaryKey  = $index = $unique = array();
 
         foreach ($tableStruct['fields'] as $field) {
 
+            $field['index'] = strtoupper($field['index']);
             //索引信息转储
-            if ($field['index'] == 'primary_key') {
+            if ($field['index'] == 'PRIMARY_KEY') {
                 $primaryKey[] = $field['name'];
-            } elseif (!empty($field['index'])) {
+            } elseif (!empty($field['index']) && $field['index'] == 'INDEX') {
                 $index[] = $field['name'];
+            } elseif (!empty($field['index']) && $field['index'] == 'UNIQUE') {
+                $unique[] = $field['name'];
             }
 
             //字段
@@ -227,8 +248,13 @@ class Excel2Sql {
                 $indexStr .= "  KEY `idx_{$tableStruct['tableName']}_{$item}` (`{$item}`)," . $this->lineSplit;
             }
         }
+        if (!empty($unique)) {
+            foreach ($unique as $item) {
+                $uniqueStr .= "  UNIQUE KEY `uni_{$tableStruct['tableName']}_{$item}` (`{$item}`)," . $this->lineSplit;
+            }
+        }
         //拼接列字段和索引
-        $tmpStr = trim($fieldSqlStr . $primaryKeyStr . $indexStr, ',' . $this->lineSplit);
+        $tmpStr = trim($fieldSqlStr . $primaryKeyStr . $indexStr . $uniqueStr, ',' . $this->lineSplit);
 
         //表引擎和字符集拼接
         $tableEngine  = $tableStruct['engine'] ? 'ENGINE=' . $tableStruct['engine'] : '';
