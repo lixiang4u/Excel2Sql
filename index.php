@@ -16,4 +16,3 @@ $excel2Sql = new  Excel2Sql($csvFile);
 //$excel2Sql->p($excel2Sql->getTableStruct());
 
 //$excel2Sql->p($excel2Sql->writeSqlFile());
-

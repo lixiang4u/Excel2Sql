@@ -121,8 +121,9 @@ class Excel2Sql {
             $this->parsedTableStruct[$this->tableCursor]['comment']   = isset($matches[2]) ? $matches[2] : '';
         } elseif (preg_match("/引擎：(\w+)/", $str, $matches)) {
             $this->parsedTableStruct[$this->tableCursor]['engine'] = isset($matches[1]) ? $matches[1] : '';
-        } elseif (preg_match("/编码：(\w+)/", $str, $matches)) {
-            $this->parsedTableStruct[$this->tableCursor]['engine'] = isset($matches[1]) ? $matches[1] : '';
+            if (preg_match("/编码：(\w+)/", $str, $matches)) {
+                $this->parsedTableStruct[$this->tableCursor]['charset'] = isset($matches[1]) ? $matches[1] : '';
+            }
         } elseif (preg_match("/^字段名/", $str, $matches)) {
             //标题行，丢弃
         } else {
