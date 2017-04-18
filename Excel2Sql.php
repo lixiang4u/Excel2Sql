@@ -265,7 +265,7 @@ class Excel2Sql {
         $tableSqlStr .= '' . "DROP TABLE IF EXISTS `{$tableStruct['tableName']}`;" . $this->lineSplit;
         $tableSqlStr .= '' . "CREATE TABLE `{$tableStruct['tableName']}` (" . $this->lineSplit;
         $tableSqlStr .= '' . $tmpStr . $this->lineSplit;
-        $tableSqlStr .= '' . ") {$tableEngine} {$tableCharset} COMMENT `{$tableStruct['comment']}`;" . $this->lineSplit;
+        $tableSqlStr .= '' . ") {$tableEngine} {$tableCharset} COMMENT '{$tableStruct['comment']}';" . $this->lineSplit;
         $tableSqlStr .= '' . $this->lineSplit;
 
         return $tableSqlStr;
