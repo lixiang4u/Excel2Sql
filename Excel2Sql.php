@@ -258,8 +258,8 @@ class Excel2Sql {
         $tmpStr = trim($fieldSqlStr . $primaryKeyStr . $indexStr . $uniqueStr, ',' . $this->lineSplit);
 
         //表引擎和字符集拼接
-        $tableEngine  = $tableStruct['engine'] ? 'ENGINE=' . $tableStruct['engine'] : '';
-        $tableCharset = $tableStruct['charset'] ? 'DEFAULT CHARSET=' . $tableStruct['charset'] : '';
+		$tableEngine  = isset($tableStruct['engine']) ? 'ENGINE=' . $tableStruct['engine'] : 'ENGINE=InnoDB';
+		$tableCharset = isset($tableStruct['charset']) ? 'DEFAULT CHARSET=' . $tableStruct['charset'] : 'DEFAULT CHARSET=utf8';
 
         //表整体结构拼接
         $tableSqlStr .= '' . "DROP TABLE IF EXISTS `{$tableStruct['tableName']}`;" . $this->lineSplit;
